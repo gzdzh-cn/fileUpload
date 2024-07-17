@@ -1,7 +1,18 @@
 # fileUpload
 
+## 扫码加好友拉群
+<img src="dzh/weixin.jpg" alt="Description of image" width="200" height="280">
+
+## dzhgo后台界面
+<img src="dzh/dzhgo.png" alt="Description of image" width="800" height="360">
+
 ## 主程序dzhgo
-https://github.com/gzdzh/dzhgo
+* 后台项目地址：https://github.com/gzdzh/dzhgo
+* 前端项目地址：https://github.com/gzdzh/dzhgo-admin-vue
+
+### dzhgo后台使用插件界面
+<img src="dzh/fileUpload.png" alt="Description of image" width="800" height="230">
+
 
 ## 插件说明
 * 插件包，要配合dzhgo主程序使用
@@ -24,21 +35,39 @@ func NewInit() {
 }
 ```
 
-## 插件功能
-> 网站后台一键上传静态资源到虚拟主机
-> 后台添加上传任务，每个任务通过ftp上传到绑定指定的服务器
+## 插件实现的功能
+* 网站后台一键上传静态资源到虚拟主机
+* 后台添加上传任务，每个任务通过ftp上传到绑定指定的服务器
 
 
-# 插件使用教程
-* 复制文件 application/admin/template/seo/seo.htm 替换，在1302行修改为当前网站编号 
+
+
+
+# eyoucms后台使用插件说明
+* 复制文件到eyoucms后台 application/admin/template/seo/seo.htm 替换，在1302行修改为当前网站编号 
 * go后台添加站点 编号要对应刚刚填写的网站编号，并且填写上传参数 
 * 后台seo栏目进入，找到右上角，先点击整站生成，再点击发布网站按钮，等待上传完成
 
 **特别注意**
-- 后台添加的上传参数的localRootPath的路径必须要是go程序所在的服务器
+> 后台添加的上传参数的localRootPath的路径必须要是go程序所在的服务器
 
-## 扫码加好友拉群
-<img src="dzh/weixin.jpg" alt="Description of image" width="200" height="280">
+
+## 注意事项
+> 进度接口返回是流数据，前端需要用fetch来调用，用jq的ajax不支持
+> 服务器启动go程序，默认端口是8210，后端go默认开启跨域
+> 如果前端和go程序在同一个服务器，直接请求localhost:8209，
+> 如果前端外网请求go程序，请配置go代理域名一个域名，前端再请求该域名
+
+
+###
+eyoucms后台上传界面
+
+<img src="./dzh/eyoucms/admin.png" alt="Description of image" width="600" height="300">
+
+
+### 前端参考示例
+看根目录的前端示例文件夹
+
 
 ## 资源打包命令
 
@@ -51,23 +80,6 @@ gf gen dao -p=addons/fileUpload -t=addons_file_upload_config
 gf gen service -s=addons/fileUpload/logic -d=addons/fileUpload/service
 
 ```
-
-
-## 注意事项
-> 进度接口返回是流数据，前端需要用fetch来调用，用jq的ajax不支持
-> 服务器启动go程序，默认端口是8210，后端go默认开启跨域
-> 如果前端和go程序在同一个服务器，直接请求localhost:8209，
-> 如果前端外网请求go程序，请配置go代理域名一个域名，前端再请求该域名
-
-
-###
-后台界面
-
-<img src="./dzh/eyoucms/admin.png" alt="Description of image" width="600" height="300">
-
-
-### 前端参考示例
-看根目录的前端示例
 
 
 ### 修改历史
