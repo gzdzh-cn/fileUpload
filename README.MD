@@ -7,8 +7,8 @@
 <img src="dzh/dzhgo.png" alt="Description of image" width="800" height="360">
 
 ## 主程序dzhgo
-* 后台项目地址：https://github.com/gzdzh/dzhgo
-* 前端项目地址：https://github.com/gzdzh/dzhgo-admin-vue
+* 后台项目地址：https://github.com/gzdzh-cn/dzhgo
+* 前端项目地址：https://github.com/gzdzh-cn/dzhgo-admin-vue
 
 ### dzhgo后台使用插件界面
 <img src="dzh/fileUpload.png" alt="Description of image" width="800" height="230">
