@@ -75,6 +75,7 @@ gf gen service -s=addons/fileUpload/logic -d=addons/fileUpload/service
 v1.1.4
 - 更新依赖包
 - 后台增加批量启动和停止，可以通过后台一键上传，也可以再调用接口上传
+- logic支持model和dao调用，controller路由注册改为model接口
 
 v1.1.3
 - 优化一些启动逻辑
