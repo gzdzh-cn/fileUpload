@@ -38,7 +38,7 @@ func NewInit() {
 - 后台添加的上传参数的localRootPath的路径必须要是go程序所在的服务器
 
 ## 扫码加好友拉群
-<img src="/addons/fileUpload/dzh/eyoucms/weixin.jpg" alt="Description of image" width="200" height="280">
+<img src="./dzh/eyoucms/weixin.jpg" alt="Description of image" width="200" height="280">
 
 ## 资源打包命令
 
@@ -63,7 +63,7 @@ gf gen service -s=addons/fileUpload/logic -d=addons/fileUpload/service
 ###
 后台界面
 
-<img src="/addons/fileUpload/dzh/eyoucms/admin.png" alt="Description of image" width="600" height="300">
+<img src="./dzh/eyoucms/admin.png" alt="Description of image" width="600" height="300">
 
 
 ### 前端参考示例
