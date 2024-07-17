@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>流式请求</title>
+
+    <!-- 引入 layui.css -->
+    <link href="//unpkg.com/layui@2.9.13/dist/css/layui.css" rel="stylesheet">
+    <script typet="text/javascript" src="http://libs.baidu.com/jquery/1.9.1/jquery.min.js"></script>
+
+
+
+</head>
+
+<body>
+
+    <div>
+
+        <button type="button" id="up_ftp">获取进度</button>
+
+
+    </div>
+
+    <!--发布网址上传进度-->
+    <div>
+        <div id="progess" style="display: none;margin: 0 auto;padding: 15px">
+            <div class="layui-progress layui-progress-big" lay-filter="demo-filter-progress">
+                <div class="layui-progress-bar" lay-percent="0%"></div>
+            </div>
+
+            <div style="text-align: center;padding: 15px;font-size: 18px">
+                已完成 <span style="color: red" id="percent">0</span>%
+            </div>
+
+            <div style="text-align: center;padding: 15px">
+                <span id="status"> 上传完成</span>
+                <span id="sendFile"></span>
+            </div>
+
+            <div style="width: 100%; display: flex;flex-direction: row;justify-content: center">
+                <div style="text-align: center;padding: 15px" id="stopUploap"> <button type="button"
+                        class="layui-btn layui-btn-danger layui-btn-radius">停止上传</button></div>
+                <div style="text-align: center;padding: 15px" id="resetUpload"> <button type="button"
+                        class="layui-btn normal layui-btn-radius">重新发布</button></div>
+            </div>
+
+        </div>
+        <script>
+            $("#up_ftp").click(function () {
+                doFtpLoad()
+            })
+
+            $("#stopUploap").click(function () {
+                stop()
+            })
+            $("#resetUpload").click(function () {
+                resetUpload()
+            })
+
+            var layer
+            var reader
+            const itemId = "3000"
+            const url = "http://127.0.0.1:8209/app"
+            $(function () {
+                layui.use(function () {
+                    layer = layui.layer;
+                });
+            })
+
+
+            // 执行上传
+            async function doFtpLoad() {
+                $('#stopUploap').show()
+                openFtpUpload()
+
+                const startRes = await start()
+                setTimeout(() => {
+                    getProcess(itemId)
+                }, 1000)
+
+
+            }
+
+
+            // 重新上传
+            async function resetUpload() {
+                const res = await stop()
+                console.log("reset", res);
+                if (res.code == 1000) {
+                    setTimeout(() => {
+                        doFtpLoad()
+                    }, 1500)
+                }
+
+            }
+
+            // 启动进程
+            function start() {
+
+                return new Promise((resolve, reject) => {
+                    $.ajax({
+                        url: url + "/fileUpload/startUpload",
+                        type: 'POST',
+                        data: {
+                            "itemId": itemId,
+                        },
+                        dataType: 'json',
+                        success: function (res) {
+
+                            if (res.code == 1000) {
+                                resolve(res);
+                                console.log(`开始上传`)
+                            } else {
+                                reject(res);
+                            }
+
+                        },
+                        error: function (e) {
+                            reject(e);
+                        }
+                    });
+                })
+
+            }
+
+            // 停止进程
+            async function stop() {
+
+                return new Promise((resolve, reject) => {
+                    $.ajax({
+                        url: url + "/fileUpload/stopUploadById",
+                        type: 'POST',
+                        data: { "itemId": itemId },
+                        dataType: 'json',
+                        success: function (res) {
+                            layer.closeAll();
+                            resolve(res)
+                        },
+                        error: function (xhr, status, error) {
+                            reject(`Request failed: ${status}, ${error}`); // 在失败回调中调用 reject
+                        }
+                    });
+                })
+
+            }
+
+
+            // 获取进度状态
+            async function getProcessStatusById(itemId) {
+
+                const response = await fetch(url + "/fileUpload/getProcessStatusById", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ "itemId": itemId }),
+                })
+                if (!response.ok) {
+                    // 如果响应状态码不是 2xx，则认为请求失败
+                    reject(`Error: ${response.status} ${response.statusText}`);
+                    return;
+                }
+
+                const data = await response.json(); // 解析响应为 JSON
+                console.log(data);
+                return data
+            }
+
+            // 获取进度条
+            async function getProcess(itemId) {
+                var element = layui.element;
+                try {
+                    const response = await fetch(url + "/fileUpload/steam/getProcessById", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({ "itemId": itemId }),
+                    });
+
+                    if (!response.body) {
+                        throw new Error('ReadableStream not supported');
+                    }
+
+                    reader = response.body.getReader();
+                    const decoder = new TextDecoder();
+                    $('#status').text("上传中")
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) {
+                            console.log("停止");
+                            return
+                        }
+
+                        // 处理数据
+                        const chunk = decoder.decode(value, { stream: true });
+                        resObj = JSON.parse(chunk)
+                        console.log("resObj", resObj);
+                        $('#percent').text(resObj?.data.percent);
+                        $('#sendFile').text(resObj?.data.sendFile)
+                        element.progress('demo-filter-progress', `${resObj?.data.percent}%`); // 设置 进度值
+                        if (!resObj?.data.status) {
+                            $('#stopUploap').hide()
+                            $('#status').text("已停止")
+                        }
+
+                        if (chunk.includes("data: Task Completed")) {
+                            await reader.cancel();
+                            return (resObj);
+                        }
+                        if (resObj?.code == 1001) {
+                            $('#stopUploap').hide()
+                            return (resObj);
+                        }
+                        if (resObj?.data.percent == 100) {
+                            await reader.cancel();
+                            $('#stopUploap').hide()
+                            $('#status').text("上传完成")
+                        }
+
+                    }
+
+                } catch (error) {
+                    console.error('Error:', error);
+                    layer.msg("上传错误", { icon: 5 })
+                }
+
+            }
+
+
+
+            // 打开进度条窗口
+            function openFtpUpload() {
+                layer.open({
+                    type: 1,
+
+                    title: "正在发布", // 不显示标题栏
+                    area: ['700px', '300px'], // 宽高
+                    fix: false,
+                    closeBtn: 1,
+                    shadeClose: false, // 点击遮罩关闭层
+                    scrollbar: false,
+                    content: $('#progess'),
+
+                    cancel: function () {
+                        $('#progess').hide()
+                    },
+                    end: function () {
+                        $('#progess').hide()
+                    }
+                });
+            }
+
+
+        </script>
+        <!-- 请勿在项目正式环境中引用该 layui.js 地址 -->
+        <script src="//unpkg.com/layui@2.9.13/dist/layui.js"></script>
+    </div>
+    <!--发布网址上传进度-->
+
+</body>
+
+</html>
