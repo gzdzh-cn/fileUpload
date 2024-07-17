@@ -9,7 +9,7 @@ import (
 	"context"
 	"dzhgo/addons/fileUpload/defineType"
 
-	ftp "github.com/gzdzh/dzh-ftp"
+	ftp "github.com/gzdzh-cn/dzh-ftp"
 )
 
 type (

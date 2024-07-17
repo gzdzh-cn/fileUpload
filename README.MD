@@ -84,6 +84,10 @@ gf gen service -s=addons/fileUpload/logic -d=addons/fileUpload/service
 
 ### 修改历史
 
+v1.1.8
+- 更新依赖库
+
+
 v1.1.7
 - 修复一些bug，报错录入数据库
 

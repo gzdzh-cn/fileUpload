@@ -16,7 +16,7 @@ import (
 	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/gogf/gf/v2/text/gstr"
 	"github.com/gogf/gf/v2/util/gconv"
-	"github.com/gzdzh/dzh-ftp"
+	"github.com/gzdzh-cn/dzh-ftp"
 
 	"os"
 	"path/filepath"

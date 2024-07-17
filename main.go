@@ -8,7 +8,7 @@ import (
 	"github.com/gogf/gf/v2/net/ghttp"
 	"github.com/gogf/gf/v2/os/gctx"
 	"github.com/gogf/gf/v2/util/gconv"
-	"github.com/gzdzh/dzhcore"
+	"github.com/gzdzh-cn/dzhcore"
 	"net/http"
 	"time"
 

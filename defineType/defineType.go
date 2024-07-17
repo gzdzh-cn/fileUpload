@@ -3,7 +3,7 @@ package defineType
 import (
 	"github.com/gogf/gf/v2/container/gqueue"
 	"github.com/gogf/gf/v2/frame/g"
-	ftp "github.com/gzdzh/dzh-ftp"
+	ftp "github.com/gzdzh-cn/dzh-ftp"
 	"sync"
 )
 

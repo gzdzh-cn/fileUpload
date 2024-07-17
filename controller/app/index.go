@@ -2,7 +2,7 @@ package app
 
 import (
 	"context"
-	"github.com/gzdzh/dzhcore"
+	"github.com/gzdzh-cn/dzhcore"
 
 	v1 "dzhgo/addons/fileUpload/api/app_v1"
 	"dzhgo/addons/fileUpload/defineType"
