@@ -1,5 +1,5 @@
 package fileUpload
 
 var (
-	Version = "v1.1.4"
+	Version = "v1.1.7"
 )

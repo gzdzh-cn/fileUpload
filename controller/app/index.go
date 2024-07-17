@@ -32,9 +32,9 @@ func init() {
 func (c *IndexController) StartUpload(ctx context.Context, req *v1.StartUploadReq) (res *dzhcore.BaseRes, err error) {
 
 	//进度存在返回任务id
-	id, _ := service.FileUploadService().GetProcessStatusById(ctx, req.ItemId)
-	if id != "stop" {
-		res = dzhcore.Ok(id)
+	result, err := service.FileUploadService().GetProcessStatusById(ctx, req.ItemId)
+	if err != nil {
+		res = dzhcore.Ok(result, err.Error())
 		return
 	}
 

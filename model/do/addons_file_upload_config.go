@@ -9,9 +9,9 @@ import (
 	"github.com/gogf/gf/v2/os/gtime"
 )
 
-// AddonsFileUploadConfig is the golang structure of table addons_fileUpload_config for DAO operations like Where/Data.
+// AddonsFileUploadConfig is the golang structure of table addons_file_upload_config for DAO operations like Where/Data.
 type AddonsFileUploadConfig struct {
-	g.Meta          `orm:"table:addons_fileUpload_config, do:true"`
+	g.Meta          `orm:"table:addons_file_upload_config, do:true"`
 	Id              interface{} //
 	CreateTime      *gtime.Time // 创建时间
 	UpdateTime      *gtime.Time // 更新时间
@@ -35,7 +35,6 @@ type AddonsFileUploadConfig struct {
 	LocalPathList   interface{} // 上传文件夹
 	IgnoreList      interface{} // 忽略文件
 	ProcessStatus   interface{} // 进度状态
-	UploadTime      *gtime.Time //
 	Percent         interface{} // 进度值
 	UploadStartTime *gtime.Time //
 	UploadEndTime   *gtime.Time //

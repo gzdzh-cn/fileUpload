@@ -8,7 +8,7 @@ import (
 	"github.com/gogf/gf/v2/os/gtime"
 )
 
-// AddonsFileUploadConfig is the golang structure for table addons_fileUpload_config.
+// AddonsFileUploadConfig is the golang structure for table addons_file_upload_config.
 type AddonsFileUploadConfig struct {
 	Id              string      `json:"id"              orm:"id"              ` //
 	CreateTime      *gtime.Time `json:"createTime"      orm:"createTime"      ` // 创建时间
@@ -33,7 +33,6 @@ type AddonsFileUploadConfig struct {
 	LocalPathList   string      `json:"localPathList"   orm:"localPathList"   ` // 上传文件夹
 	IgnoreList      string      `json:"ignoreList"      orm:"ignoreList"      ` // 忽略文件
 	ProcessStatus   int         `json:"processStatus"   orm:"processStatus"   ` // 进度状态
-	UploadTime      *gtime.Time `json:"uploadTime"      orm:"uploadTime"      ` //
 	Percent         float64     `json:"percent"         orm:"percent"         ` // 进度值
 	UploadStartTime *gtime.Time `json:"uploadStartTime" orm:"uploadStartTime" ` //
 	UploadEndTime   *gtime.Time `json:"uploadEndTime"   orm:"uploadEndTime"   ` //

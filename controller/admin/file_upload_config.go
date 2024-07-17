@@ -37,9 +37,9 @@ func init() {
 func (c *FileUploadConfigController) StartUpload(ctx context.Context, req *v1.StartUploadReq) (res *dzhcore.BaseRes, err error) {
 
 	//任务存在返回任务id
-	id, _ := service.FileUploadService().GetProcessStatusById(ctx, req.ItemId)
-	if id != "stop" {
-		res = dzhcore.Ok(id)
+	result, err := service.FileUploadService().GetProcessStatusById(ctx, req.ItemId)
+	if err != nil {
+		res = dzhcore.Ok(result, err.Error())
 		return
 	}
 
@@ -54,6 +54,10 @@ func (c *FileUploadConfigController) StartUpload(ctx context.Context, req *v1.St
 	ftpConn, err := service.FileUploadService().ConnectToFtp(ctx, config, true)
 	if err != nil {
 		g.Log().Error(ctx, err.Error())
+		_, err = dao.AddonsFileUploadConfig.Ctx(ctx).Data(g.Map{"error": err.Error()}).Where("itemId", req.ItemId).Update()
+		if err != nil {
+			g.Log().Error(ctx, err.Error())
+		}
 		return
 	}
 
@@ -104,8 +108,8 @@ func (c *FileUploadConfigController) MultiUpload(ctx context.Context, req *v1.Mu
 	for _, itemId := range req.ItemIds {
 
 		//任务不存在 启动任务
-		id, _ := service.FileUploadService().GetProcessStatusById(ctx, itemId)
-		if id == "stop" {
+		_, err := service.FileUploadService().GetProcessStatusById(ctx, itemId)
+		if err == nil {
 			config := service.FileUploadService().GetConfig(ctx, itemId)
 
 			//检查目录是否存在

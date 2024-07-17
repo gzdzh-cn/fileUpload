@@ -11,14 +11,14 @@ import (
 	"github.com/gogf/gf/v2/frame/g"
 )
 
-// AddonsFileUploadConfigDao is the data access object for table addons_fileUpload_config.
+// AddonsFileUploadConfigDao is the data access object for table addons_file_upload_config.
 type AddonsFileUploadConfigDao struct {
 	table   string                        // table is the underlying table name of the DAO.
 	group   string                        // group is the database configuration group name of current DAO.
 	columns AddonsFileUploadConfigColumns // columns contains all the column names of Table for convenient usage.
 }
 
-// AddonsFileUploadConfigColumns defines and stores column names for table addons_fileUpload_config.
+// AddonsFileUploadConfigColumns defines and stores column names for table addons_file_upload_config.
 type AddonsFileUploadConfigColumns struct {
 	Id              string //
 	CreateTime      string // 创建时间
@@ -43,14 +43,13 @@ type AddonsFileUploadConfigColumns struct {
 	LocalPathList   string // 上传文件夹
 	IgnoreList      string // 忽略文件
 	ProcessStatus   string // 进度状态
-	UploadTime      string //
 	Percent         string // 进度值
 	UploadStartTime string //
 	UploadEndTime   string //
 	Error           string // 异常信息
 }
 
-// addonsFileUploadConfigColumns holds the columns for table addons_fileUpload_config.
+// addonsFileUploadConfigColumns holds the columns for table addons_file_upload_config.
 var addonsFileUploadConfigColumns = AddonsFileUploadConfigColumns{
 	Id:              "id",
 	CreateTime:      "createTime",
@@ -75,7 +74,6 @@ var addonsFileUploadConfigColumns = AddonsFileUploadConfigColumns{
 	LocalPathList:   "localPathList",
 	IgnoreList:      "ignoreList",
 	ProcessStatus:   "processStatus",
-	UploadTime:      "uploadTime",
 	Percent:         "percent",
 	UploadStartTime: "uploadStartTime",
 	UploadEndTime:   "uploadEndTime",
@@ -86,7 +84,7 @@ var addonsFileUploadConfigColumns = AddonsFileUploadConfigColumns{
 func NewAddonsFileUploadConfigDao() *AddonsFileUploadConfigDao {
 	return &AddonsFileUploadConfigDao{
 		group:   "default",
-		table:   "addons_fileUpload_config",
+		table:   "addons_file_upload_config",
 		columns: addonsFileUploadConfigColumns,
 	}
 }

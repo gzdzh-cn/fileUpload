@@ -13,6 +13,7 @@ import (
 	"github.com/gogf/gf/v2/os/gctx"
 	"github.com/gogf/gf/v2/os/gfile"
 	"github.com/gogf/gf/v2/os/glog"
+	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/gogf/gf/v2/text/gstr"
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/gzdzh/dzh-ftp"
@@ -52,6 +53,7 @@ func (s *sFileUploadService) GetConfig(ctx context.Context, itemId string) *defi
 
 // 连接ftp
 func (s *sFileUploadService) ConnectToFtp(ctx context.Context, config *defineType.Config, mode bool) (*ftp.ServerConn, error) {
+
 	address := fmt.Sprintf("%s:%s", config.FtpHost, config.FtpPort)
 	if mode {
 		g.Log().Warning(ctx, "主动模式")
@@ -87,32 +89,60 @@ func (s *sFileUploadService) Upload(ctx context.Context, itemId string) {
 		//记录开始
 		updateData := g.Map{
 			"processStatus":   1,
-			"uploadStartTime": time.Now(),
+			"uploadStartTime": gtime.Now(),
 			"error":           nil,
 		}
+
 		_, err := dao.AddonsFileUploadConfig.Ctx(newCtx).Data(updateData).Where(g.Map{"itemId": itemId}).Update()
 		if err != nil {
 			g.Log().Error(newCtx, err.Error())
+			service.TaskManager().DelTask(itemId)
+			return
 		}
 
 		//计算全部文件
-		list, _ := getFileList(ctx, task)
+		list, err := getFileList(ctx, task)
+		if err != nil {
+			g.Log().Error(ctx, err)
+			service.TaskManager().DelTask(itemId)
+			updateData := g.Map{
+				"processStatus": -2,
+				"error":         err.Error(),
+			}
+			_, err = dao.AddonsFileUploadConfig.Ctx(newCtx).Data(updateData).Where(g.Map{"itemId": itemId}).Update()
+			if err != nil {
+				g.Log().Error(newCtx, err.Error())
+				return
+			}
+		}
 		task.Total = len(list)
 
 		//队列输入
-		_ = pubQueue(newCtx, task.TaskQueue, list, task)
+		pubQueue(newCtx, task.TaskQueue, list)
 	}()
 
 	go func() {
 
 		//队列输出
-		_ = popQueue(newCtx, task.TaskQueue, task)
+		err := popQueue(newCtx, task.TaskQueue, task)
+		if err != nil {
+			g.Log().Error(ctx, err)
+			service.TaskManager().DelTask(itemId)
+			updateData := g.Map{
+				"processStatus": -2,
+				"error":         err.Error(),
+			}
+			_, err = dao.AddonsFileUploadConfig.Ctx(newCtx).Data(updateData).Where(g.Map{"itemId": itemId}).Update()
+			if err != nil {
+				g.Log().Error(newCtx, err.Error())
+			}
+		}
 	}()
 
 }
 
 // 队列输入
-func pubQueue(ctx context.Context, taskQueue *gqueue.Queue, fileList g.SliceStr, task *defineType.Task) error {
+func pubQueue(ctx context.Context, taskQueue *gqueue.Queue, fileList g.SliceStr) {
 
 	for _, file := range fileList {
 
@@ -122,7 +152,6 @@ func pubQueue(ctx context.Context, taskQueue *gqueue.Queue, fileList g.SliceStr,
 		//time.Sleep(time.Second)
 	}
 
-	return nil
 }
 
 // 队列输出
@@ -139,13 +168,17 @@ func popQueue(ctx context.Context, taskQueue *gqueue.Queue, task *defineType.Tas
 			updateData := g.Map{
 				"processStatus": -1,
 				"percent":       task.SendData[task.Id].Percent,
-				"uploadEndTime": time.Now(),
+				"uploadEndTime": gtime.Now(),
 			}
-			dao.AddonsFileUploadConfig.Ctx(ctx).Data(updateData).Where(g.Map{"itemId": task.Id}).Update()
+			_, err := dao.AddonsFileUploadConfig.Ctx(ctx).Data(updateData).Where(g.Map{"itemId": task.Id}).Update()
+			if err != nil {
+				return err
+			}
 
-			task.SendData[task.Id].Lock()
-			task.SendData[task.Id].Status = false
-			task.SendData[task.Id].Unlock()
+			//task.SendData[task.Id].Lock()
+			//task.SendData[task.Id].Status = false
+			//task.SendData[task.Id].Unlock()
+			service.TaskManager().DelTask(task.Id)
 
 			task.Lock()
 			task.Status = "end"
@@ -167,7 +200,10 @@ func popQueue(ctx context.Context, taskQueue *gqueue.Queue, task *defineType.Tas
 
 			file := gconv.String(pop)
 			//上传
-			_ = ftpUpload(ctx, task, file)
+			err := ftpUpload(ctx, task, file)
+			if err != nil {
+				return err
+			}
 
 			num++
 			//计算百分比
@@ -199,9 +235,12 @@ func popQueue(ctx context.Context, taskQueue *gqueue.Queue, task *defineType.Tas
 				updateData := g.Map{
 					"processStatus": 2,
 					"percent":       task.SendData[task.Id].Percent,
-					"uploadEndTime": time.Now(),
+					"uploadEndTime": gtime.Now(),
 				}
-				dao.AddonsFileUploadConfig.Ctx(ctx).Data(updateData).Where(g.Map{"itemId": task.Id}).Update()
+				_, err = dao.AddonsFileUploadConfig.Ctx(ctx).Data(updateData).Where(g.Map{"itemId": task.Id}).Update()
+				if err != nil {
+					return err
+				}
 			}
 			//glog.Debugf(ctx, "上传中：num：%v", gconv.String(num))
 			g.Log().Debugf(ctx, "上传中：%v", gconv.String(task.SendData[task.Id]))
@@ -239,7 +278,11 @@ func ftpUpload(ctx context.Context, task *defineType.Task, filepath string) erro
 // 全部文件列表（含目录）
 func getFileList(ctx context.Context, task *defineType.Task) (list g.SliceStr, err error) {
 
+	g.Log().Debug(ctx, "getFileList start")
+
 	for _, localPath := range task.Config.LocalPathList {
+
+		g.Log().Debugf(ctx, "localPath:%v", localPath)
 
 		//检查是否存在
 		if !gfile.Exists(task.Config.LocalRootPath + localPath) {
@@ -255,17 +298,20 @@ func getFileList(ctx context.Context, task *defineType.Task) (list g.SliceStr, e
 
 		if gfile.Ext(localPath) == "" {
 			//扫描目录，过滤自定义文件，得到需要上传的文件夹和文件集合
-			fileList, _ := gfile.ScanDirFunc(task.Config.LocalRootPath+localPath, "*", true, func(path string) string {
-
+			fileList, err := gfile.ScanDirFunc(task.Config.LocalRootPath+localPath, "*", true, func(path string) string {
 				if ignores.Contains(gfile.Basename(path)) {
 					return ""
 				}
 				path_ := gstr.SubStrFrom(path, localPath)
 				return path_
 			})
+			if err != nil {
+				return nil, err
+			}
 			list = append(list, fileList...)
 		}
 	}
+	g.Log().Debugf(ctx, "getFileList end : %v ", len(list))
 
 	return
 }
@@ -306,10 +352,12 @@ func (s *sFileUploadService) GetProcessStatusById(ctx context.Context, itemId st
 
 	task := service.TaskManager().GetTask(itemId)
 	if task == nil || task.Status == "end" {
-		g.Log().Warningf(ctx, "项目：%v,没启动", itemId)
-		return "stop", nil
+
+		str := fmt.Sprintf("项目：%v,没启动", itemId)
+		return str, nil
 	} else {
-		return task.Id, nil
+		err = gerror.Newf("项目：%v,启动了", itemId)
+		return task.Id, err
 	}
 }
 
